@@ -1,5 +1,8 @@
 function generateRoutesFromViews() {
-  const routes = [];
+  const routes = [{
+    path:"/",
+    redirect:"business"
+  }];
   // 查找所有的 Vue 组件
   const vueModules = import.meta.glob("../views/**/*-page/index.vue");
   // 查找所有的路由配置文件
@@ -30,7 +33,7 @@ function generateRoutesFromViews() {
       if (!routeMap.has(parentPath)) {
         routeMap.set(parentPath, {
           name: pathItem,
-          path: "/" + pathItem,
+          path: (index ? "" : "/") + pathItem,
           children: [],
         });
       }
@@ -46,8 +49,8 @@ function generateRoutesFromViews() {
 
     // 基础路由配置
     const route = {
-      ...routeConfig,
-      path: "/" + routeName,
+      cusRouteConfig: routeConfig,
+      path:  routeName,
       name: routeName,
       component: () => vueModules[vuePath](),
       children: [],
@@ -65,7 +68,8 @@ function generateRoutesFromViews() {
   }
 
   // 可以根据权限做过滤
-  routeMap.delete("/auth");
+  // routeMap.delete("/auth");
+  console.log("Generated Route Map:", routeMap);
 
   for (const [routePath, route] of routeMap) {
 
@@ -79,6 +83,22 @@ function generateRoutesFromViews() {
       parentRoute.children.push(route);
     }
   }
+
+
+  // 设置重定向到第一个子路由
+  routeMap.forEach((route) => {
+    if(!route.redirect) {
+      if (route.children && route.children.length > 0) {
+        route.redirect = {
+          name: route.children[0].name
+        };
+      }
+    }
+    // 合并自定义路由配置
+    route.cusRouteConfig && Object.assign(route, route.cusRouteConfig);
+  });
+
+
   return routes;
 }
 

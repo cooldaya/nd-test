@@ -1,6 +1,6 @@
 <template>
     <div>
-
+        linecharts-page
     </div>
 </template>
 
