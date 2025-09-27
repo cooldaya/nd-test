@@ -1,6 +1,6 @@
 <template>
     <div>
-        water piecharts page
+        404 Not Found
     </div>
 </template>
 

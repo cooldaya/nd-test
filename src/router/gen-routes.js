@@ -1,12 +1,19 @@
-function generateRoutesFromViews() {
-  const routes = [{
-    path:"/",
-    redirect:"business"
-  }];
+import MainLayout from "@/components/layout/MainLayout.vue";
+import ModuleLayout from "@/components/layout/ModuleLayout.vue";
+
+const getLayoutComponent = (index) => {
+  if (index < 2) {
+    return index === 0 ? MainLayout : ModuleLayout;
+  }
+  return null;
+};
+
+function generateBusinessRoutesFromViews() {
+  const businessRoutes = [];
   // 查找所有的 Vue 组件
   const vueModules = import.meta.glob("../views/**/*-page/index.vue");
   // 查找所有的路由配置文件
-  const routeConfigModules = import.meta.glob("../views/**/*-page/route.js", {
+  const routeConfigModules = import.meta.glob("../views/**/route.js", {
     eager: true,
   });
 
@@ -18,6 +25,7 @@ function generateRoutesFromViews() {
   // 用于构建路由树的辅助Map
   const routeMap = new Map();
 
+  const pagePathPrefix = "../views";
   const replaceExg = /(\.\.\/views|\/index\.vue)/g;
 
   for (const vuePath in vueModules) {
@@ -31,10 +39,16 @@ function generateRoutesFromViews() {
     pathArray.slice(0, -1).forEach((pathItem, index) => {
       const parentPath = "/" + pathArray.slice(0, index + 1).join("/");
       if (!routeMap.has(parentPath)) {
+        const parentRouteConfigPath = pagePathPrefix + parentPath + "/route.js";
+        const parentRouteConfig =
+          routeConfigModules[parentRouteConfigPath]?.default || {};
+
         routeMap.set(parentPath, {
           name: pathItem,
           path: (index ? "" : "/") + pathItem,
           children: [],
+          cusRouteConfig: parentRouteConfig,
+          component: getLayoutComponent(index),
         });
       }
     });
@@ -50,7 +64,7 @@ function generateRoutesFromViews() {
     // 基础路由配置
     const route = {
       cusRouteConfig: routeConfig,
-      path:  routeName,
+      path: routeName,
       name: routeName,
       component: () => vueModules[vuePath](),
       children: [],
@@ -72,9 +86,8 @@ function generateRoutesFromViews() {
   console.log("Generated Route Map:", routeMap);
 
   for (const [routePath, route] of routeMap) {
-
     if (routePath.split("/").length === 2) {
-      routes.push(route);
+      businessRoutes.push(route);
       continue;
     }
     const parentPath = routePath.split("/").slice(0, -1).join("/");
@@ -84,22 +97,21 @@ function generateRoutesFromViews() {
     }
   }
 
-
   // 设置重定向到第一个子路由
   routeMap.forEach((route) => {
-    if(!route.redirect) {
+    if (!route.redirect) {
       if (route.children && route.children.length > 0) {
         route.redirect = {
-          name: route.children[0].name
+          name: route.children[0].name,
         };
       }
     }
     // 合并自定义路由配置
     route.cusRouteConfig && Object.assign(route, route.cusRouteConfig);
+    Reflect.deleteProperty(route, "cusRouteConfig");
   });
 
-
-  return routes;
+  return businessRoutes;
 }
 
-export { generateRoutesFromViews };
+export { generateBusinessRoutesFromViews };

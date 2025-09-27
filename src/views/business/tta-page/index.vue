@@ -1,6 +1,6 @@
 <template>
     <div>
-        water piecharts page
+tta-page
     </div>
 </template>
 
