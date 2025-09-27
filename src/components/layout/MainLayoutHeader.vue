@@ -20,7 +20,7 @@
 
 <script setup>
 import { computed } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 
 const route = useRoute();
 const menus = computed(() => {
@@ -33,6 +33,9 @@ const menus = computed(() => {
     fullPath: currentMatched.path + "/" + item.path,
   }));
 });
+
+
+console.log(route)
 
 // 如auth 模块全屏，就不展示header
 // /auth/route.js {meta:{fill:表示该模块下的所有页面都不展示header}}
