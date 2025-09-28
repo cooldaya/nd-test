@@ -2,6 +2,6 @@
 @import "tailwindcss" ;
 
 
-.nd-tt{
-    @apply w-100 h-100 bg-red-400;
+.nd-fill{
+    @apply w-full h-full;
 }
